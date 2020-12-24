@@ -24,7 +24,7 @@ RSpec.describe "Users", type: :system do
           fill_in 'Password confirmation', with: 'password'
           click_button 'SignUp'
           expect(page).to have_content "Email can't be blank"
-          expect(current_path).to eq users_path
+          expect(current_path).to eq '/users'
         end
       end
       context '登録済のメールアドレスを使用' do
@@ -36,7 +36,7 @@ RSpec.describe "Users", type: :system do
           fill_in 'Password confirmation', with: 'password'
           click_button 'SignUp'
           expect(page).to have_content "Email has already been taken"
-          expect(current_path).to eq sign_up_path
+          expect(current_path).to eq users_path
           expect(page).to have_field 'Email', with: another_user.email
         end
       end
@@ -54,7 +54,7 @@ RSpec.describe "Users", type: :system do
   end
 
   describe 'ログイン後' do
-    { login_as(user) }
+      before { login_as(user) }
 
     describe 'ユーザー編集' do
       context 'フォームの入力値が正常' do
@@ -84,8 +84,8 @@ RSpec.describe "Users", type: :system do
           visit edit_user_path(user.id)
           other_user = create(:user)
           fill_in "Email", with: other_user.email
-          fill_in 'Password' with: 'password'
-          fill_in 'Password confirmation' with: 'password'
+          fill_in 'Password', with: 'password'
+          fill_in 'Password confirmation', with: 'password'
           click_button 'Update'
           expect(page).to have_content "Email has already been taken"
           expect(current_path).to eq user_path(user.id)
