@@ -29,6 +29,17 @@ RSpec.describe "Tasks", type: :system do
           expect(current_path).to eq task_path(task)
         end
       end
+
+      context 'タスクの一覧ページへアクセス' do
+        it '全てのユーザーのタスク情報が表示される' do
+          task_list = create_list(:task, 3)
+          visit tasks_path
+          expect(page).to have_content task_list[0].title
+          expect(page).to have_content task_list[1].title
+          expect(page).to have_content task_list[2].title
+          expect(current_path).to eq tasks_path
+        end
+      end
     end
   end
 
@@ -45,6 +56,10 @@ RSpec.describe "Tasks", type: :system do
           fill_in 'Deadline', with: DateTime.new(2020, 12, 25, 8, 40)
           click_button 'Create Task'
           expect(page).to have_content 'Task was successfully created.'
+          expect(page).to have_content 'Title: テストタイトル'
+          expect(page).to have_content 'Content: テストコンテント'
+          expect(page).to have_content 'Status: doing'
+          expect(page).to have_content 'Deadline: 2020/12/25 8:40'
           expect(current_path).to eq '/tasks/1'
         end
       end
@@ -57,6 +72,7 @@ RSpec.describe "Tasks", type: :system do
           select 'doing', from: 'Status'
           fill_in 'Deadline', with: DateTime.new(2020, 12, 25, 8, 40)
           click_button 'Create Task'
+          expect(page).to have_content '1 error prohibited this task from being saved'
           expect(page).to have_content "Title can't be blank"
           expect(current_path).to eq tasks_path
         end
@@ -71,6 +87,7 @@ RSpec.describe "Tasks", type: :system do
           select 'doing', from: 'Status'
           fill_in 'Deadline', with: DateTime.new(2020, 12, 25, 8, 40)
           click_button 'Create Task'
+          expect(page).to have_content '1 error prohibited this task from being saved'
           expect(page).to have_content "Title has already been taken"
           expect(current_path).to eq tasks_path
         end
@@ -94,6 +111,8 @@ RSpec.describe "Tasks", type: :system do
           fill_in 'Title', with: '編集テストタイトル'
           click_button 'Update Task'
           expect(page).to have_content 'Task was successfully updated.'
+          expect(page).to have_content 'Title: 編集テストタイトル'
+          expect(page).to have_content 'Status: todo'
           expect(current_path).to eq task_path(task)
         end
       end
@@ -112,6 +131,7 @@ RSpec.describe "Tasks", type: :system do
           fill_in 'Title', with: another_task.title
           click_button 'Update Task'
           expect(page).to have_content "Title has already been taken"
+          expect(page).to have_content '1 error prohibited this task from being saved'
           expect(current_path).to eq task_path(task)
         end
       end
@@ -123,7 +143,7 @@ RSpec.describe "Tasks", type: :system do
       it "タスクの削除成功" do
         visit tasks_path
         click_link 'Destroy'
-        expect(page.accept_confirm)
+        expect(page.accept_confirm).to eq 'Are you sure?'
         expect(page).to have_content 'Task was successfully destroyed.'
         expect(current_path).to eq tasks_path
         expect(page).to have_no_content task.title
